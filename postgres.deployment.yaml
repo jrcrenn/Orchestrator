@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: default
+  labels:
+    app: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: postgres-volume
+        persistentVolumeClaim:
+          claimName: postgres-pv-claim
+        # hostPath:
+        #     path: ./data
+      containers:
+      - name: postrgres
+        image: postgres:12
+        resources:
+          limits:
+            memory: "50Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-volume
+          mountPath: /var/lib/postgresql/data
+        envFrom:
+        - secretRef:
+            name: postgres-secret
+        - configMapRef:
+            name: postgres-config
+      ##
+      # volumes:
+      #   - name: postgres-volume
+      #     hostPath:
+      #       path: /var/lib/postgresql/data
+      ##
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - epitech-s4qe

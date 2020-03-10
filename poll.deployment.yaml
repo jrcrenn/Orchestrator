@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poll
+  namespace: default
+  labels:
+    app: poll
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: poll
+  template:
+    metadata:
+      labels:
+        app: poll
+    spec: 
+      restartPolicy: Always
+      containers:
+      - name: poll
+        image: epitechcontent/t-dop-600-poll:k8s
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: redis-config
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - epitech-s4ql

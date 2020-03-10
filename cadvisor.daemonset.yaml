@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: cadvisor
+  template:
+    metadata:
+      labels:
+        name: cadvisor
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: cadvisor
+        image: google/cadvisor:latest
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+        volumeMounts:
+          - name: postgres-volume
+            mountPath: /var/lib/postgresql/data
+            readOnly: true
+      volumes:
+        - name: postgres-volume
+          hostPath:
+            path: /var/lib/postgresql/data
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: kubernetes.io/hostname
+      #           operator: In
+      #           values:
+      #             - epitech-s4ql
+      #             - epitech-s4qe
+      
